@@ -1,0 +1,6 @@
+*.pyc
+*.svg
+*.mp4
+*.txt
+*.ogg
+__pycache__/
