@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Manim from Project Root",
+            "type": "shell",
+            "command": "manim",
+            "args": [
+                "-qk",
+                "-p",
+                "${file}",
+                "${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Ejecuta Manim desde la raíz del proyecto."
+        }
+    ]
+}

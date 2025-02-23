@@ -3,4 +3,10 @@
 *.mp4
 *.txt
 *.ogg
+*.png
+*.jpg
+*.gif
+*.text
+media/
 __pycache__/
+
