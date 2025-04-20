@@ -66,3 +66,142 @@ class WriteEquations3D(Succession):
             self.textGroup.set_opacity(0)
         else:
             self.textGroup[1:].set_opacity(0)
+
+
+class Write3D(Succession):
+    """
+    A class to create a 3D writing animation in a Manim scene.
+
+    Attributes:
+    -----------
+    scene : Scene
+        The Manim scene where the animation will be played.
+    textGroup : Mobject
+        The text to be animated.
+
+    Methods:
+    --------
+    __init__(scene, text, **kwargs):
+        Initializes the Write3D object with the given scene and text.
+
+    prepare():
+        Prepares the text for the animation by setting its opacity to 0 and adding it to the scene as a fixed object.
+    """
+
+    def __init__(self, scene, text, **kwargs):
+        self.scene = scene  # save the scene
+        self.textGroup = text
+
+        # prepare animation before animation
+
+        self.prepare()
+
+        # define animation sequence
+
+        animations = []
+
+        animations.append(
+            AnimationGroup(Write(self.textGroup), self.textGroup.animate.set_opacity(1))
+        )
+        # Initialize Succession with the list of animations
+        super().__init__(*animations, **kwargs)
+
+    def prepare(self):
+        self.textGroup.set_opacity(0)
+        self.scene.add_fixed_in_frame_mobjects(self.textGroup)
+
+
+class Uncreate3D(Succession):
+    """
+    A class to create a succession of animations that uncreate a 3D text object.
+
+    Parameters
+    ----------
+    scene : Scene
+        The scene in which the animation will take place.
+    text : Mobject
+        The text object to be uncreated.
+    **kwargs : dict
+        Additional keyword arguments passed to the Succession class.
+
+    Attributes
+    ----------
+    scene : Scene
+        The scene in which the animation will take place.
+    textGroup : Mobject
+        The text object to be uncreated.
+    """
+
+    def __init__(self, scene, text, **kwargs):
+        self.scene = scene  # save the scene
+        self.textGroup = text
+
+        # prepare animation before animation
+        # define animation sequence
+
+        animations = []
+
+        animations.append(Uncreate(text), text.animate.set_opacity(0))
+        # Initialize Succession with the list of animations
+        super().__init__(*animations, **kwargs)
+
+
+class FadeOut3D(Succession):
+    """
+    A class to create a succession of animations that fade out a 3D text object.
+
+    Parameters
+    ----------
+    scene : Scene
+        The scene in which the animation will take place.
+    text : Mobject
+        The text object to be faded out.
+    **kwargs : dict
+        Additional keyword arguments passed to the Succession class.
+
+    Attributes
+    ----------
+    scene : Scene
+        The scene in which the animation will take place.
+    textGroup : Mobject
+        The text object to be faded out.
+    """
+
+    def __init__(self, scene, text, **kwargs):
+        self.scene = scene  # save the scene
+        self.textGroup = text
+
+        # prepare animation before animation
+        # define animation sequence
+
+        animations = []
+
+        animations.append(FadeOut(text), text.animate.set_opacity(0))
+        # Initialize Succession with the list of animations
+        super().__init__(*animations, **kwargs)
+
+
+class FadeIn3D(Succession):
+    def __init__(self, scene, text, **kwargs):
+        self.scene = scene  # save the scene
+        self.textGroup = text
+
+        # prepare animation before animation
+
+        self.prepare()
+
+        # define animation sequence
+
+        animations = []
+
+        animations.append(
+            AnimationGroup(
+                FadeIn(self.textGroup), self.textGroup.animate.set_opacity(1)
+            )
+        )
+        # Initialize Succession with the list of animations
+        super().__init__(*animations, **kwargs)
+
+    def prepare(self):
+        self.textGroup.set_opacity(0)
+        self.scene.add_fixed_in_frame_mobjects(self.textGroup)

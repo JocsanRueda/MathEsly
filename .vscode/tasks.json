@@ -6,7 +6,7 @@
             "type": "shell",
             "command": "manim",
             "args": [
-                "-qk",
+                "-ql",
                 "-p",
                 "${file}",
                 "${fileBasenameNoExtension}"
@@ -23,6 +23,7 @@
             },
             "problemMatcher": [],
             "detail": "Ejecuta Manim desde la raíz del proyecto."
-        }
+        },
+        
     ]
 }

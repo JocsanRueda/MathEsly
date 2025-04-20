@@ -1,10 +1,10 @@
 from manim import *
 
 
-config.frame_width = 9
-config.frame_height = 16
-config.pixel_width = 2160
-config.pixel_height = 3840
+config.frame_width = 16
+config.frame_height = 9
+config.pixel_width = 3840
+config.pixel_height =2160 
 config.frame_rate = 60
 
 
