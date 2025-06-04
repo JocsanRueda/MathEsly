@@ -1,4 +1,4 @@
 import random
 
-
-print(random.sample(range(10), k=5))
+array = [5]
+print(array[-1])

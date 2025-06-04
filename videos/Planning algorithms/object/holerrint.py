@@ -67,12 +67,13 @@ class FaceClockDial(VGroup):
 
 class PerforatedCard(VGroup):
 
-    def __init__(self, perforated=False):
+    def __init__(self, perforated=False, simpleCard=False):
         super().__init__()
         self.perforated = perforated
         width = config.frame_width - 1
         height = config.frame_height - 2
         notch = 0.5
+        self.simpleCard = simpleCard
 
         # Definir los puntos del polígono (rectángulo con todas las esquinas recortadas)
         points = [
@@ -113,6 +114,10 @@ class PerforatedCard(VGroup):
         card = Polygon(*points, fill_color=YELLOW_B, fill_opacity=1).set_stroke(
             color=YELLOW_A
         )
+
+        if simpleCard:
+            self.add(card)
+            return
 
         digits = [
             [str(i % 10) if j % 2 == 0 else r"\hspace{0.2cm}" for j in range(90)]

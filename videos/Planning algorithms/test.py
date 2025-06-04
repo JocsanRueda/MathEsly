@@ -4,17 +4,14 @@ from object.tabularMachine import *
 from object.holerrint import PerforatedCard
 
 
-class test(MovingCameraScene):
+class test(Scene):
     def construct(self):
 
-        faceClock = TabularMachine()
-        faceClock.rotate(
-            PI / 2, axis=Y_AXIS, about_point=faceClock.get_center()
-        ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=faceClock.get_center())
+        circle = Circle().shift(LEFT * 2.5)
+        square = Square()
+        triangle = Triangle().shift(RIGHT * 2.5)
+        group = VGroup(circle, square, triangle)
 
-        self.camera.frame.scale(1 / 2.5).move_to(faceClock.faceClockDial)
-        self.add(faceClock)
-        self.play(
-            Succession(*[faceClock.faceClockDial.random_add_count() for _ in range(20)])
-        )
-        self.wait(1)
+        group2 = group.copy()
+        group2.remove(group2[1])
+        self.add(group2)
