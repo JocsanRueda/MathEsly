@@ -1,8 +1,9 @@
 from manim import *
+from object.arrayNumber import ArrayNumber
 import random
 
 
-class Scene3Part4(Scene):
+class Scene4(Scene):
     default_font = "JetBrains Mono"
     text_config = {
         "font": default_font,
@@ -11,6 +12,9 @@ class Scene3Part4(Scene):
     }
 
     def construct(self):
+        self.part1()
+
+    def intro(self):
         cap = Text("Capitulo 2", **self.text_config, color=TEAL).to_edge(UP)
 
         full_text = "El orden nace con las computadoras"
@@ -50,3 +54,115 @@ class Scene3Part4(Scene):
             cursor.set_opacity(1)
             self.wait(0.25)
         cursor.set_opacity(0)
+
+    def part1(self):
+
+        # radix sort
+        array = [100, 50, 3, 7000, 10]
+
+        array_order = list(range(10))
+        #                 1 - 2 - 3 - 4 - 5
+        list_array = ArrayNumber(array, color=BLUE).to_edge(UP).scale(0.6)
+        list_order = (
+            ArrayNumber(
+                array_order,
+                color=WHITE,
+                vertical=True,
+                show_lines=False,
+                width=1,
+                height=1,
+                length_space=0.3,
+                font_size=34,
+            )
+            .to_edge(LEFT)
+            .scale(0.5)
+            .shift([0, -0.5, 0])
+        )
+        self.add(list_array, list_order)
+        animation_become = []
+        for i, square in enumerate(list_array.squares):
+            len_str = 4 - len(square.get_number_string())
+
+            newText = (
+                Text(
+                    "0" * len_str + square.get_number_string(),
+                    font=self.default_font,
+                    font_size=32,
+                )
+                .scale(0.5)
+                .move_to(square.get_center())
+            )
+
+            animation_become.append(square.number_text.animate.become(newText))
+
+        self.play(AnimationGroup(*animation_become, lag_ratio=0.2))
+
+        # # select element with max digits
+
+        # max_element = list_array.squares[3]
+        # max_element.save_state()
+
+        # # text with numer digits
+        # text1 = Text("4", font=self.default_font, font_size=38).next_to(
+        #     max_element, DOWN, buff=0.4
+        # )
+        # self.play(
+        #     max_element.animate.set_color(YELLOW),
+        #     Write(text1),
+        #     run_time=0.5,
+        # )
+        # self.wait(1)
+
+        squareSelect = (
+            Rectangle(width=0.15, height=0.3, color=RED, fill_opacity=0)
+            .set_stroke(width=5)
+            .set_z_index(10)
+        )
+
+        self.add(squareSelect)
+        it = len(str(max(list_array.array)))
+        cont_elements = [[] for _ in range(10)]
+
+        for i in range(2):
+
+            if i > 0:
+                new_order = [
+                    int(l.get_number_string()) for e in cont_elements for l in e
+                ]
+
+                self.play(
+                    list_array.new_order(new_order, positions=position),
+                )
+                print("New order:", new_order)
+                print(list_array.array)
+                cont_elements = [[] for _ in range(10)]
+                if i == it:
+                    break
+
+            position = [i.get_center() for i in list_array.squares]
+            for j, jdx in enumerate(list_array.squares):
+                print("jdx:", jdx.get_number_string())
+
+                self.play(
+                    squareSelect.animate.move_to(
+                        jdx.get_number_text()[-1 * (i + 1)].get_center()
+                    ),
+                    run_time=0.2,
+                )
+                self.wait(0.5)
+                position_index = (
+                    int(jdx.get_number_string()[(-1 * (i + 1))])
+                    if i + 1 == len(str(jdx.get_number_string()))
+                    else 0
+                )
+                cont_elements[position_index].append(jdx)
+
+                self.play(
+                    jdx.animate.next_to(
+                        list_order.squares[position_index],
+                        RIGHT,
+                        buff=((jdx.width + 0.1) * len(cont_elements[position_index])),
+                    ),
+                )
+
+            self.wait(1)

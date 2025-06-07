@@ -216,7 +216,7 @@ class Scene3(ThreeDScene):
 
         self.add(allGrupCards)
 
-        def random_move():
+        def random_move(animate=True):
             animation = []
             # El ciclo termina cuando todos los grupos tienen solo 1 elemento
             while len(simplesCard) > 1 or len(simpleCard1) > 1 or len(simpleCard2) > 1:
@@ -236,14 +236,23 @@ class Scene3(ThreeDScene):
                 index = random.randint(0, len(allGrupCards) - 1)
                 originArray = allGrupCards[index]
 
-                animation.append(
-                    randomItem.animate.move_to(
+                if animate:
+                    animation.append(
+                        randomItem.animate.move_to(
+                            originArray[0].get_center()
+                            + [0, 0, space_z * len(originArray)]
+                        ).set_z_index(index)
+                    )
+
+                    originArray.add(randomItem)
+                    array.remove(randomItem)
+                else:
+                    randomItem.move_to(
                         originArray[0].get_center() + [0, 0, space_z * len(originArray)]
                     ).set_z_index(index)
-                )
 
-                originArray.add(randomItem)
-                array.remove(randomItem)
+                    originArray.add(randomItem)
+                    array.remove(randomItem)
 
             lastItem = [
                 *simplesCard,
@@ -256,21 +265,56 @@ class Scene3(ThreeDScene):
                 randomItem = lastItem[i]
 
                 originArray = allGrupCards[i]
-
-                animation.append(
-                    randomItem.animate.move_to(
+                if animate:
+                    animation.append(
+                        randomItem.animate.move_to(
+                            originArray[0].get_center()
+                            + [0, 0, space_z * len(originArray)]
+                        ).set_z_index(i)
+                    )
+                else:
+                    randomItem.move_to(
                         originArray[0].get_center() + [0, 0, space_z * len(originArray)]
                     ).set_z_index(i)
-                )
 
                 originArray.add(randomItem)
 
             return AnimationGroup(*animation, lag_ratio=0.009)
 
-        self.play(
-            random_move(),
+        # #animte
+        # self.play(
+        #     random_move(),
+        # )
+
+        random_move(animate=False)
+        # Posiciona la cámara de frente a los cards agrupados
+        # standar phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
+        self.move_camera(
+            frame_center=ORIGIN + [0, 0, 1],
+            theta=self.camera.get_theta() - 25 * DEGREES,
+            zoom=1.4,
         )
-        self.remove(allGrupCards)
+
+        text1 = (
+            Text(
+                "Radix Sort",
+                font="JetBrains Mono",
+                weight=BOLD,
+                color=TEAL,
+                font_size=70,
+            )
+            .to_edge(UP, buff=0.5)
+            .set_z_index(0)
+        )
+
+        self.add_fixed_in_frame_mobjects(
+            text1,
+        )
+
+        self.play(
+            Write(text1, run_time=2, rate_func=smooth),
+        )
+
         self.wait(1)
 
 
