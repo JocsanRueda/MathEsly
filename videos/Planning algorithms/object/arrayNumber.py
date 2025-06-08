@@ -94,7 +94,7 @@ class ArrayNumber(VGroup):
 
         self.move_to(ORIGIN)
 
-    def new_order(self, array, positions=None):
+    def new_order(self, array, positions=None, lag_ratio=0):
 
         positions = (
             [square.get_center() for square in self.squares]
@@ -116,7 +116,7 @@ class ArrayNumber(VGroup):
             copy_squares.append(self.squares[index])
         self.squares = VGroup(*copy_squares)
         self.array = array
-        return AnimationGroup(*animation, lag_ratio=0.1)
+        return AnimationGroup(*animation, lag_ratio=lag_ratio)
 
     def line_square(
         self,

@@ -78,7 +78,35 @@ class Scene4(Scene):
             .scale(0.5)
             .shift([0, -0.5, 0])
         )
-        self.add(list_array, list_order)
+        self.play(
+            DrawBorderThenFill(list_array),
+        )
+
+        # select element with max digits
+
+        max_element = list_array.squares[3]
+        max_element.save_state()
+
+        self.wait(1)
+
+        # text with numer digits
+        text1 = Text("4", font=self.default_font, font_size=38).next_to(
+            max_element, DOWN, buff=0.4
+        )
+        self.play(
+            max_element.animate.set_color(YELLOW),
+            Write(text1),
+            run_time=0.5,
+        )
+        self.wait(1)
+
+        self.play(
+            Restore(max_element),
+            FadeOut(text1),
+        )
+
+        self.wait(1)
+
         animation_become = []
         for i, square in enumerate(list_array.squares):
             len_str = 4 - len(square.get_number_string())
@@ -97,21 +125,11 @@ class Scene4(Scene):
 
         self.play(AnimationGroup(*animation_become, lag_ratio=0.2))
 
-        # # select element with max digits
+        self.play(
+            DrawBorderThenFill(list_order),
+        )
 
-        # max_element = list_array.squares[3]
-        # max_element.save_state()
-
-        # # text with numer digits
-        # text1 = Text("4", font=self.default_font, font_size=38).next_to(
-        #     max_element, DOWN, buff=0.4
-        # )
-        # self.play(
-        #     max_element.animate.set_color(YELLOW),
-        #     Write(text1),
-        #     run_time=0.5,
-        # )
-        # self.wait(1)
+        self.wait(1)
 
         squareSelect = (
             Rectangle(width=0.15, height=0.3, color=RED, fill_opacity=0)
@@ -119,11 +137,13 @@ class Scene4(Scene):
             .set_z_index(10)
         )
 
-        self.add(squareSelect)
+        self.play(
+            DrawBorderThenFill(squareSelect),
+        )
         it = len(str(max(list_array.array)))
         cont_elements = [[] for _ in range(10)]
 
-        for i in range(2):
+        for i in range(it + 1):
 
             if i > 0:
                 new_order = [
@@ -131,23 +151,20 @@ class Scene4(Scene):
                 ]
 
                 self.play(
-                    list_array.new_order(new_order, positions=position),
+                    list_array.new_order(new_order, positions=position, lag_ratio=0.35),
                 )
-                print("New order:", new_order)
-                print(list_array.array)
+
                 cont_elements = [[] for _ in range(10)]
                 if i == it:
                     break
 
             position = [i.get_center() for i in list_array.squares]
             for j, jdx in enumerate(list_array.squares):
-                print("jdx:", jdx.get_number_string())
 
                 self.play(
                     squareSelect.animate.move_to(
                         jdx.get_number_text()[-1 * (i + 1)].get_center()
                     ),
-                    run_time=0.2,
                 )
                 self.wait(0.5)
                 position_index = (
@@ -165,4 +182,27 @@ class Scene4(Scene):
                     ),
                 )
 
-            self.wait(1)
+        self.play(
+            FadeOut(squareSelect),
+            FadeOut(list_order),
+        )
+        animation_become = []
+        for i, square in enumerate(list_array.squares):
+            len_str = 4 - len(square.get_number_string())
+
+            newText = (
+                Text(
+                    square.get_number_string(),
+                    font=self.default_font,
+                    font_size=32,
+                )
+                .scale(0.5)
+                .move_to(square.get_center())
+            )
+
+            animation_become.append(square.number_text.animate.become(newText))
+
+        self.play(AnimationGroup(*animation_become, lag_ratio=0.2))
+        self.play(list_array.animate.move_to(ORIGIN))
+
+        self.wait(1)
