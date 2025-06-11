@@ -12,7 +12,7 @@ class Scene4(Scene):
     }
 
     def construct(self):
-        self.part1()
+        self.intro()
 
     def intro(self):
         cap = Text("Capitulo 2", **self.text_config, color=TEAL).to_edge(UP)

@@ -229,3 +229,30 @@ class ArrayNumber(VGroup):
             )
 
         return AnimationGroup(*animation)
+
+    def separated(self, start=None, end=None):
+        newArray = []
+        newSquares = VGroup()
+        newLines = VGroup()
+        if start is None and end is not None:
+            newArray = self.array[:end]
+            newSquares = self.squares[:end].copy()
+            newLines = self.lines[: end - 1].copy()
+        elif start is not None and end is None:
+            newArray = self.array[start:]
+            newSquares = self.squares[start:].copy()
+            newLines = self.lines[start:].copy()
+        elif start is not None and end is not None:
+            newArray = self.array[start:end]
+            newSquares = self.squares[start:end].copy()
+            newLines = self.lines[start : end - 1].copy()
+
+        newNumberAray = self.copy()
+        newNumberAray.array = newArray
+        newNumberAray.squares = newSquares
+        newNumberAray.lines = newLines
+
+        # ACTUALIZA LOS SUBMOBJECTS DEL VGROUP
+        newNumberAray.submobjects = list(newSquares) + list(newLines)
+
+        return newNumberAray
