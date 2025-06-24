@@ -1,3 +1,4 @@
+from glm import array
 from manim import *
 
 
@@ -15,6 +16,12 @@ class SquareNumber(VGroup):
 
     def get_number_string(self):
         return self.number_string
+
+    def set_color(self, color=BLUE, **kwargs):
+        # Solo cambia el color del cuadrado, nunca del texto
+        self.square.set_color(color, **kwargs)
+        # No tocar self.number_text
+        return self
 
     def __init__(
         self,
@@ -83,8 +90,8 @@ class ArrayNumber(VGroup):
             font_size=font_size,
         )
 
-        self.head = array[0]
-        self.tail = array[-1]
+        self.head = array[0] if array else None
+        self.tail = array[-1] if array else None
         self.array = array
 
         if show_lines:
@@ -93,6 +100,41 @@ class ArrayNumber(VGroup):
             self.add(self.squares)
 
         self.move_to(ORIGIN)
+
+    def modify_color(self, color, all_):
+        if all_:
+            return AnimationGroup(
+                self.squares.animate.set_color(color),
+                self.lines.animate.set_color(color),
+            )
+        else:
+            return AnimationGroup(
+                *[
+                    square.get_square().animate.set_color(color)
+                    for square in self.squares
+                ]
+            )
+
+    def modify_order(self, array, positions=None):
+        positions = (
+            [square.get_center() for square in self.squares]
+            if positions is None
+            else positions
+        )
+
+        for i in range(len(array)):
+            new_position = positions[i]
+
+            self.squares[self.array.index(array[i])].move_to(new_position)
+
+        copy_squares = []
+        for i in range(len(array)):
+            index = self.array.index(array[i])
+            copy_squares.append(self.squares[index])
+        self.squares = VGroup(*copy_squares)
+        self.array = array
+
+        return self
 
     def new_order(self, array, positions=None, lag_ratio=0):
 
@@ -128,6 +170,8 @@ class ArrayNumber(VGroup):
         height=None,
         font_size=24,
     ):
+        if not array:
+            return VGroup(), VGroup()
         max_value = max(array)
         maxSquare = SquareNumber(
             max_value, color=color, resizable=True, font_size=font_size
@@ -229,6 +273,24 @@ class ArrayNumber(VGroup):
             )
 
         return AnimationGroup(*animation)
+
+    def separated_array(self, array, show_lines=True):
+        newSquares = VGroup()
+        newLines = VGroup()
+        newArray = []
+        for i in range(len(array)):
+            for j in self.squares:
+                if j.get_number_string() == str(array[i]):
+                    newSquares.add(j.copy())
+                    newArray.append(array[i])
+                    if i < len(array) - 1 and show_lines:
+                        newLines.add(self.lines[i].copy())
+        newNumberAray = self.copy()
+        newNumberAray.array = newArray
+        newNumberAray.squares = newSquares
+        newNumberAray.lines = newLines
+        newNumberAray.submobjects = list(newSquares) + list(newLines)
+        return newNumberAray
 
     def separated(self, start=None, end=None):
         newArray = []
