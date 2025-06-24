@@ -1,36 +1,84 @@
 from manim import *
 
 
-def bubble_sort_mobObjects(self, rectangles:VGroup,dictionary:dict, stroke_length=0.1, animate=True):
-        n = len(rectangles)
-        
-        for i in range(n):
-            for j in range(0, n-i-1):
-                rectangles[j].set_fill(RED_D)
-                rectangles[j+1].set_fill(GREEN_C)
+def bubble_sort_mobObjects(
+    self,
+    rectangles: VGroup,
+    dictionary: dict,
+    stroke_length=0.1,
+    animate=True,
+    add_sound=True,
+    rotate=False,
+):
+    n = len(rectangles)
+    if rotate:
+        self.play(
+            rectangles.animate.rotate(PI / 2, about_point=rectangles.get_center()),
+        )
 
-                self.add_sound(f"assets/sounds/s_val_{dictionary[rectangles[j].height]}.wav")
-                #self.add_sound(f"assets/sounds/s_val_{dictionary[rectangles[j+1].height]}.wav")
-                
+        self.play(
+            AnimationGroup(
+                *[
+                    k[1].animate.rotate(-PI / 2, about_point=k[1].get_center())
+                    for k in rectangles
+                ]
+            ),
+        )
 
-                if rectangles[j].get_height() > rectangles[j+1].get_height():
-                    p_r1=rectangles[j].get_center()
-                    p_r2=rectangles[j+1].get_center()
-                    
-                    if animate:
-                        self.play( rectangles[j].animate.move_to([p_r2[0],p_r1[1],0]),rectangles[j+1].animate.move_to([p_r1[0],p_r2[1],0]) ,run_time=1)
-                    else:
-                        rectangles[j].move_to([p_r2[0],p_r1[1],0])
-                        rectangles[j+1].move_to([p_r1[0],p_r2[1],0])
-                       
-                    rectangles[j], rectangles[j+1] = rectangles[j+1], rectangles[j]
-                    self.wait(0.04)
-                rectangles[j].set_fill(WHITE)
-                rectangles[j+1].set_fill(WHITE)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            rectangles[j][0].set_fill(RED_D).set_stroke(color=BLACK)
+            rectangles[j + 1][0].set_fill(GREEN_C).set_stroke(color=BLACK)
+            if add_sound:
+                self.add_sound(
+                    f"assets/sounds/s_val_{dictionary[rectangles[j].height]}.wav"
+                )
+            # self.add_sound(f"assets/sounds/s_val_{dictionary[rectangles[j+1].height]}.wav")
 
-        return rectangles
+            value1 = rectangles[j].get_width() if rotate else rectangles[j].get_height()
+            value2 = (
+                rectangles[j + 1].get_width()
+                if rotate
+                else rectangles[j + 1].get_height()
+            )
 
-def merge_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, stroke_length=0.1, animate=True):
+            if value1 > value2:
+                p_r1 = rectangles[j].get_center()
+                p_r2 = rectangles[j + 1].get_center()
+
+                if animate:
+                    self.play(
+                        rectangles[j].animate.move_to(
+                            [
+                                p_r2[0] if not rotate else p_r1[0],
+                                p_r1[1] if not rotate else p_r2[1],
+                                0,
+                            ]
+                        ),
+                        rectangles[j + 1].animate.move_to(
+                            [
+                                p_r1[0] if not rotate else p_r2[0],
+                                p_r2[1] if not rotate else p_r1[1],
+                                0,
+                            ]
+                        ),
+                        run_time=1,
+                    )
+                else:
+                    rectangles[j].move_to([p_r2[0], p_r1[1], 0])
+                    rectangles[j + 1].move_to([p_r1[0], p_r2[1], 0])
+
+                rectangles[j], rectangles[j + 1] = rectangles[j + 1], rectangles[j]
+                self.wait(0.04)
+            rectangles[j][0].set_color(WHITE).set_stroke(color=BLACK)
+            rectangles[j + 1][0].set_color(WHITE).set_stroke(color=BLACK)
+
+    return rectangles
+
+
+def merge_sort_mobObjects(
+    scene, rectangles: VGroup, dictionary: dict, stroke_length=0.1, animate=True
+):
     def merge(left, right):
         result = VGroup()
         i = j = 0
@@ -45,11 +93,11 @@ def merge_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, stroke_le
             scene.add_sound(f"assets/sounds/s_val_{dictionary[r1.height]}.wav")
             scene.wait(0.04)
             if r1.height < r2.height:
-             
+
                 result.add(r1)
                 i += 1
             else:
-               
+
                 result.add(r2)
                 j += 1
             r1.set_fill(WHITE)
@@ -76,7 +124,7 @@ def merge_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, stroke_le
 
         for idx, rect in enumerate(merged):
             new_x = rect_width * idx - (frame_width - 0.5 - rect_width) / 2
-      
+
             current_y = rect.get_center()[1]
             target_pos = [new_x, current_y, 0]
 
@@ -90,6 +138,7 @@ def merge_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, stroke_le
     # Iniciar la recursión
     sorted_rects = recursive_sort(rectangles)
     return sorted_rects
+
 
 def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=True):
     def heapify(arr: VGroup, n, i):
@@ -107,7 +156,7 @@ def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=Tr
             # Colorear los rectángulos involucrados
             arr[i].set_fill(RED_D)
             arr[largest].set_fill(GREEN_C)
-           
+
             scene.add_sound(f"assets/sounds/s_val_{dictionary[arr[i].height]}.wav")
             scene.wait(0.04)
 
@@ -119,7 +168,7 @@ def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=Tr
                 scene.play(
                     arr[i].animate.set_x(pos_largest),
                     arr[largest].animate.set_x(pos_i),
-                    run_time=0.5
+                    run_time=0.5,
                 )
             else:
                 arr[i].set_x(pos_largest)
@@ -144,7 +193,7 @@ def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=Tr
         # Intercambiar el primero con el último
         rectangles[0].set_fill(RED_D)
         rectangles[i].set_fill(GREEN_C)
-    
+
         scene.add_sound(f"assets/sounds/s_val_{dictionary[rectangles[i].height]}.wav")
         scene.wait(0.04)
 
@@ -155,7 +204,7 @@ def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=Tr
             scene.play(
                 rectangles[0].animate.set_x(pos_i),
                 rectangles[i].animate.set_x(pos_0),
-                run_time=0.5
+                run_time=0.5,
             )
         else:
             rectangles[0].set_x(pos_i)
@@ -170,7 +219,10 @@ def heap_sort_mobObjects(scene, rectangles: VGroup, dictionary: dict, animate=Tr
 
     return rectangles
 
-def timsort_mobObjects(scene, rectangles: VGroup, dictionary: dict, RUN=32, animate=True):
+
+def timsort_mobObjects(
+    scene, rectangles: VGroup, dictionary: dict, RUN=32, animate=True
+):
     # Precalcular todas las posiciones X esperadas
     x_positions = [rect.get_x() for rect in rectangles]
 
@@ -190,7 +242,7 @@ def timsort_mobObjects(scene, rectangles: VGroup, dictionary: dict, RUN=32, anim
                     scene.play(
                         arr[j].animate.set_x(x_positions[j + 1]),
                         arr[j + 1].animate.set_x(x_positions[j]),
-                        run_time=0.5
+                        run_time=0.5,
                     )
                 else:
                     arr[j].set_x(x_positions[j + 1])
@@ -207,8 +259,8 @@ def timsort_mobObjects(scene, rectangles: VGroup, dictionary: dict, RUN=32, anim
         len1 = m - l + 1
         len2 = r - m
 
-        left = VGroup(*arr[l:m+1])
-        right = VGroup(*arr[m+1:r+1])
+        left = VGroup(*arr[l : m + 1])
+        right = VGroup(*arr[m + 1 : r + 1])
 
         i = j = 0
         k = l
@@ -278,5 +330,3 @@ def timsort_mobObjects(scene, rectangles: VGroup, dictionary: dict, RUN=32, anim
         size *= 2
 
     return rectangles
-
-
