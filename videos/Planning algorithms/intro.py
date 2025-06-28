@@ -13,7 +13,7 @@ from algoritms.ord import *
 class scene0(Scene):
 
     def construct(self):
-        n = 10
+        n = 20
         stroke_length = 0.5
         numbers = [random.randint(1, 2 * n) for i in range(n)]
 
@@ -34,7 +34,7 @@ class scene0(Scene):
 
         self.wait(1)
 
-        sort = timsort_mobObjects(self, rectangles, dictionary, animate=False)
+        sort = counting_sort_mobObjects(self, rectangles, dictionary, animate=False)
 
         # for i in range(len(sort)):
         #     print(sort[i].height)

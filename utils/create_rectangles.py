@@ -1,7 +1,9 @@
 from manim import *
 
 
-def create_rectangles(self, numbers, stroke_length=0.1, show_number=False) -> VGroup:
+def create_rectangles(
+    self, numbers, stroke_length=0.1, show_number=False, scale=1
+) -> VGroup:
     """
     Creates a group of rectangles based on the given list of numbers.
 
@@ -46,4 +48,10 @@ def create_rectangles(self, numbers, stroke_length=0.1, show_number=False) -> VG
         group = VGroup(rectangle, text)
         rectangles.add(group)
 
-    return rectangles
+    rectangles.scale(scale)
+
+    dictionary = {}
+    for i in range(len(numbers)):
+        dictionary[round(rectangles[i][0].height, 5)] = numbers[i]
+
+    return rectangles, dictionary
