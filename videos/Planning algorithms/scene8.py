@@ -477,6 +477,7 @@ class Scene8(Scene):
             font=self.default_font,
             color=WHITE,
             font_size=22,
+            line_spacing=1,
         ).next_to(mtext1, DOWN, buff=0.5)
 
         nlogn_algorithms = Text(
@@ -484,6 +485,7 @@ class Scene8(Scene):
             font=self.default_font,
             color=WHITE,
             font_size=22,
+            line_spacing=1,
         ).next_to(mtext2, DOWN, buff=0.5)
 
         n2_algorithms = Text(
@@ -491,6 +493,7 @@ class Scene8(Scene):
             font=self.default_font,
             color=WHITE,
             font_size=22,
+            line_spacing=1,
         ).next_to(mtext3, DOWN, buff=0.5)
 
         self.wait(1)
