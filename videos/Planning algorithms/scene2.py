@@ -1,117 +1,330 @@
 from manim import *
-import numpy as np
-import random
-
 from object.holerrint import *
+from object.clock import ClockDial
+from object.tabularMachine import TabularMachine
 
 
-class scene2S(MovingCameraScene):
-    default_font = "JetBrains Mono"
-    perforatedCard = PerforatedCard().next_to(ORIGIN, UP, buff=-0.3).scale(0.64)
-    censeCard = CenseCard().scale(0.81).next_to(ORIGIN, DOWN, buff=-0.2)
-
+class Scene2(ThreeDScene):
     def construct(self):
-        self.part2()
+        self.part3()
 
     def part1(self):
+        axes = ThreeDAxes()
+        # Agregar nombres a los ejes
+        x_label = Text("X").next_to(axes.x_axis.get_end(), RIGHT)
+        y_label = Text("Y").next_to(axes.y_axis.get_end(), UP)
+        z_label = Text("Z").next_to(axes.z_axis.get_end(), OUT)
+        self.add(x_label, y_label, z_label)
+        perforatedCard = PerforatedCard(True).scale(0.5)
 
-        # extract digits
-        text_digits = self.perforatedCard.text_digits
-        self.add(self.perforatedCard)
-
-        self.camera.frame.move_to(self.perforatedCard).set(
-            width=config.frame_width * 0.64
+        prism = (
+            Prism(
+                dimensions=[perforatedCard.width, perforatedCard.height, 0.05],
+            )
+            .set_fill(color=YELLOW_B, opacity=1)
+            .shift([0, 0, -0.01])
         )
-        circle1 = (
-            Circle(radius=0.1, color=BLACK, fill_opacity=1)
-            .set_fill(color=BLACK)
-            .move_to(text_digits[0][0].get_center())
+
+        self.add(axes, perforatedCard)
+
+        self.move_camera(
+            phi=90 * DEGREES,
+            theta=-180 * DEGREES,
+            run_time=2,
+            added_anims=[FadeIn(prism)],
         )
 
-        circles = VGroup(
-            *[
-                Circle(radius=0.1, color=BLACK, fill_opacity=1)
-                .set_fill(color=BLACK)
-                .move_to(
-                    text_digits[random.randint(0, len(text_digits) - 1)][
-                        random.randrange(0, len(text_digits[0]), 2)
-                    ].get_center()
+        self.move_camera(frame_center=perforatedCard, zoom=3.5)
+        self.wait(2)
+
+    def part3(self):
+        axes = ThreeDAxes()
+        axes_labels = axes.get_axis_labels(Tex("x"), Tex("y"), Tex("z"))
+        self.add(axes, axes_labels)
+        self.set_camera_orientation(
+            phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
+        )
+        machine = TabularMachine(
+            main_structure_opacity=1.0,
+            drawers_opacity=1.0,
+            desktop_opacity=1.0,
+            platform_opacity=1.0,
+            card_reader_opacity=1.0,
+            back_panel_opacity=1.0,
+        )
+
+        perforatedCard = (
+            PerforatedCard(perforated=True)
+            .scale(0.1)
+            .move_to(machine.lever_assembly.get_center())
+            .shift([-0.25, -0.45, -0.2])
+        )
+        perforatedCard.rotate(
+            angle=PI / 2, axis=Z_AXIS, about_point=perforatedCard.get_center()
+        )
+
+        self.play(
+            DrawBorderThenFill(machine),
+        )
+
+        self.move_camera(
+            theta=40 * DEGREES + 2 * PI,
+            run_time=4,
+            rate_func=linear,
+        )
+
+        # self.add(perforatedCard)
+        self.add(machine)
+        self.add(perforatedCard.shift([12, 0, 0]))
+        original_position = perforatedCard.get_center()
+        position = machine.lever_assembly.get_center() + [-0.25, -0.45, -0.2]
+
+        machine.open_reader(animate=False)
+        # scene reader card
+        for _ in range(3):
+
+            # move card to reader
+            self.play(perforatedCard.animate.move_to(position), rate_func=rush_into)
+
+            # close reader card
+            self.play(
+                AnimationGroup(
+                    machine.close_reader(),
+                    perforatedCard.animate.set_fill(opacity=0.2).set_stroke(
+                        opacity=0.2
+                    ),
+                    lag_ratio=0.1,
                 )
-                for i in range(len(text_digits) - 1)
-            ]
-        )
-
-        # self.add(self.perforatedCard)
-        # self.add(circles)
-        self.play(
-            DrawBorderThenFill(self.perforatedCard),
-        )
-
-        # zoom to the card
-        self.camera.frame.save_state()
-        self.play(
-            self.camera.frame.animate.move_to(text_digits[0][0].get_center()).set(
-                width=8
             )
-        )
-        self.wait(1)
-        # draw the circle
-        self.play(
-            Create(circle1),
-        )
-        self.wait(1)
-        # unzoom
-        self.play(
-            Restore(self.camera.frame),
-        )
-        self.wait(1)
-        self.play(
-            Create(circles),
-        )
-        self.wait(1)
-        self.play(
-            Uncreate(circles),
-            Uncreate(circle1),
-        )
+            # add count to clock dial
+            self.play(machine.faceClockDial.random_add_count())
 
-    def part2(self):
-
-        self.add(self.perforatedCard)
-
-        self.camera.frame.move_to(self.perforatedCard).set(
-            width=config.frame_width * 0.64
-        )
-
-        self.play(
-            self.camera.frame.animate.move_to(self.censeCard).set(
-                width=config.frame_width * 0.90
+            # open rader card
+            self.play(
+                AnimationGroup(
+                    machine.open_reader(),
+                    perforatedCard.animate.set_fill(opacity=1).set_stroke(opacity=1),
+                    lag_ratio=0.1,
+                )
             )
+
+            # move card to out camera
+            self.play(perforatedCard.animate.shift([0, 10, 0]), rate_func=rush_into)
+
+            perforatedCard.move_to(original_position)
+
+        # scene view Dial
+
+        # Mueve la cámara para que quede de frente a faceClockDial
+
+        face_center = machine.faceClockDial.get_center()
+        machine.get_ang
+        self.move_camera(
+            frame_center=face_center,
+            phi=90 * DEGREES,
+            theta=0 * DEGREES,
+            zoom=2.5,
+            run_time=2,
         )
-        self.play(
-            DrawBorderThenFill(self.censeCard),
-        )
-        self.wait(1)
 
-        self.play(
-            self.camera.frame.animate.move_to(ORIGIN).set(
-                width=config.frame_width * 1.3
-            ),
-        )
+        self.play(machine.faceClockDial.random_add_count(Is3D=True))
 
-        self.wait(1)
+        self.wait()
+
+        # # part 4
+        # perforatedCard.shift([0, 5, 1])
+        # space_z = 0.02
+
+        # simplesCard = VGroup(
+        #     [
+        #         PerforatedCard(simpleCard=True)
+        #         .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+        #         .scale(0.1)
+        #         .move_to(perforatedCard.get_center() + [0, 0, -space_z])
+        #         for _ in range(150)
+        #     ]
+        # )
+
+        # for i in range(len(simplesCard)):
+        #     simplesCard[i].rotate(
+        #         angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
+        #     ).shift([0, 0, -space_z * i])
+
+        # simplesCard = VGroup(*reversed(simplesCard.submobjects))
+        # simplesCard.add(perforatedCard)
+        # # self.play(
+        # #     AnimationGroup(*[FadeIn(s) for s in simplesCard], lag_ratio=0.05),
+        # #     run_time=1,
+        # # )
+
+        # simplesCard.set_z_index(10)
+        # self.add(simplesCard)
+
+        # simpleCard1 = (
+        #     simplesCard.copy()
+        #     .shift([-perforatedCard.width * 1.5, -1, 0])
+        #     .set_z_index(9)
+        # )
+        # simpleCard2 = (
+        #     simplesCard.copy().shift([-perforatedCard.width * 1.5, 1, 0]).set_z_index(9)
+        # )
+
+        # self.add(simpleCard1, simpleCard2)
+        # # self.move_camera(frame_center=simplesCard.get_center(), zoom=2)
+        # # self.play(
+        # #     FadeIn(simpleCard1),
+        # #     FadeIn(simpleCard2),
+        # # )
+        # # self.wait(1)
+        # self.remove(machine)
+
+        # # simplesCard.move_to(ORIGIN)
+        # # simpleCard1.move_to([-perforatedCard.width * 1.5, -1, 0])
+        # # simpleCard2.move_to([-perforatedCard.width * 1.5, 1, 0])
+
+        # # group1
+        # groupCard1 = VGroup(
+        #     PerforatedCard(simpleCard=True)
+        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+        #     .scale(0.1)
+        # )
+        # groupCard1.rotate(
+        #     angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
+        # )
+        # # group2
+        # groupCard2 = VGroup(
+        #     PerforatedCard(simpleCard=True)
+        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+        #     .scale(0.1)
+        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+        # # group3
+        # groupCard3 = VGroup(
+        #     PerforatedCard(simpleCard=True)
+        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+        #     .scale(0.1)
+        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+        # # group4
+        # groupCard4 = VGroup(
+        #     PerforatedCard(simpleCard=True)
+        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+        #     .scale(0.1)
+        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+
+        # allGrupCards = VGroup(groupCard1, groupCard2, groupCard3, groupCard4).arrange(
+        #     DOWN, buff=0.5
+        # )
+
+        # self.add(allGrupCards)
+
+        # def random_move(animate=True):
+        #     animation = []
+        #     # El ciclo termina cuando todos los grupos tienen solo 1 elemento
+        #     while len(simplesCard) > 1 or len(simpleCard1) > 1 or len(simpleCard2) > 1:
+        #         randomArray = []
+        #         if len(simplesCard) > 1:
+        #             randomArray.append(simplesCard)
+        #         if len(simpleCard1) > 1:
+        #             randomArray.append(simpleCard1)
+        #         if len(simpleCard2) > 1:
+        #             randomArray.append(simpleCard2)
+
+        #         # Selecciona un grupo fuente con más de 1 elemento
+        #         array = random.choice(randomArray)
+        #         # Selecciona un elemento que NO sea el último
+        #         randomItem = random.choice(array.submobjects[:-1])
+
+        #         index = random.randint(0, len(allGrupCards) - 1)
+        #         originArray = allGrupCards[index]
+
+        #         if animate:
+        #             animation.append(
+        #                 randomItem.animate.move_to(
+        #                     originArray[0].get_center()
+        #                     + [0, 0, space_z * len(originArray)]
+        #                 ).set_z_index(index)
+        #             )
+
+        #             originArray.add(randomItem)
+        #             array.remove(randomItem)
+        #         else:
+        #             randomItem.move_to(
+        #                 originArray[0].get_center() + [0, 0, space_z * len(originArray)]
+        #             ).set_z_index(index)
+
+        #             originArray.add(randomItem)
+        #             array.remove(randomItem)
+
+        #     lastItem = [
+        #         *simplesCard,
+        #         *simpleCard1,
+        #         *simpleCard2,
+        #         simpleCard1[0].copy(),
+        #     ]
+        #     for i in range(len(lastItem)):
+
+        #         randomItem = lastItem[i]
+
+        #         originArray = allGrupCards[i]
+        #         if animate:
+        #             animation.append(
+        #                 randomItem.animate.move_to(
+        #                     originArray[0].get_center()
+        #                     + [0, 0, space_z * len(originArray)]
+        #                 ).set_z_index(i)
+        #             )
+        #         else:
+        #             randomItem.move_to(
+        #                 originArray[0].get_center() + [0, 0, space_z * len(originArray)]
+        #             ).set_z_index(i)
+
+        #         originArray.add(randomItem)
+
+        #     return AnimationGroup(*animation, lag_ratio=0.009)
+
+        # # #animte
+        # # self.play(
+        # #     random_move(),
+        # # )
+
+        # random_move(animate=False)
+        # # Posiciona la cámara de frente a los cards agrupados
+        # # standar phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
+        # self.move_camera(
+        #     frame_center=ORIGIN + [0, 0, 1],
+        #     theta=self.camera.get_theta() - 25 * DEGREES,
+        #     zoom=1.4,
+        # )
+
+        # text1 = (
+        #     Text(
+        #         "Radix Sort",
+        #         font="JetBrains Mono",
+        #         weight=BOLD,
+        #         color=TEAL,
+        #         font_size=70,
+        #     )
+        #     .to_edge(UP, buff=0.5)
+        #     .set_z_index(0)
+        # )
+
+        # self.add_fixed_in_frame_mobjects(
+        #     text1,
+        # )
+
+        # self.play(
+        #     Write(text1, run_time=2, rate_func=smooth),
+        # )
+
+        # self.wait(1)
 
 
-class scene2(ZoomedScene):
-    default_font = "JetBrains Mono"
-    perforatedCard = PerforatedCard()
-    censeCard = CenseCard()
-
+class Scene2Part2(ZoomedScene):
     def __init__(self, **kwargs):
         ZoomedScene.__init__(
             self,
             zoom_factor=0.3,
-            zoomed_display_height=1,
-            zoomed_display_width=1,
+            zoomed_display_height=2,
+            zoomed_display_width=2,
             image_frame_stroke_width=10,
             zoomed_camera_config={
                 "default_frame_stroke_width": 4,
@@ -121,182 +334,86 @@ class scene2(ZoomedScene):
         )
 
     def construct(self):
-        self.part1()
+        perforatedCard = PerforatedCard().scale(0.3)
+        width = perforatedCard.width / 2
 
-    def part1(self):
-        def get_circles(column, row):
-            return (
-                Circle(radius=0.07, color=BLACK, fill_opacity=1)
-                .set_fill(color=BLACK)
-                .move_to(self.perforatedCard.text_digits[column][row * 2].get_center())
-            )
+        # contact machine
+        contacMachine2D = TabularMachine2D(width=width, opened=False)
 
-        # extract digits
-        self.perforatedCard.next_to(ORIGIN, UP, buff=-0.3).scale(0.84)
-        self.censeCard.next_to(ORIGIN, DOWN, buff=-0.2).scale(0.81)
-        self.camera.frame.set(width=config.frame_width * 1.3)
-        self.add(self.perforatedCard)
-        self.add(self.censeCard)
+        hole = contacMachine2D.pins[4].get_x()
 
-        # rectangle in perforatedCard
-        p1 = self.perforatedCard.text_digits[0].get_y()
-        p2 = self.perforatedCard.text_digits[-1].get_y()
-        distance = abs(p2 - p1)
+        line1 = Line([-width, 0, 0], [hole - 0.1, 0, 0], color=YELLOW_B)
+        line2 = Line([hole + 0.1, 0, 0], [width, 0, 0], color=YELLOW_B)
 
-        rectPerforatedCard = (
-            Rectangle(
-                height=distance * 1.1,
-                width=0.3,
-                color=RED,
-                fill_opacity=0,
-            )
-            .move_to(self.perforatedCard)
-            .set_x(self.perforatedCard.text_digits[0][0].get_x())
-        )
+        card = VGroup(line1, line2).set_fill(color=YELLOW_B, opacity=1)
 
-        # rectangle in censeCard
-        text = self.censeCard.text
+        clockDial = ClockDial(radius=1, counter=0).to_corner(UP + RIGHT, buff=0.1)
+        self.add(clockDial)
+        contacMachine2D.set_state(opened=True)
+        self.add(card, contacMachine2D)
 
-        rectCenseCard = self.zoomed_camera.frame
-        rectCenseCard.move_to(text[51:52])
-        rectCenseCard.set_stroke(width=4, color=RED)
+        zoomedFrame = self.zoomed_camera.frame
 
-        # animation for sex F M
-        self.play(
-            Create(rectCenseCard),
-        )
+        zoomedFrame.move_to(contacMachine2D.bottomPart[0][4].get_center())
+        zoomedFrame.set_stroke(width=4, color=RED)
 
-        # activate zoom
+        display = self.zoomed_display
+
+        display.to_edge(LEFT + UP)
         self.activate_zooming()
         self.play(self.get_zoomed_display_pop_out_animation())
 
-        self.wait(1)
-
+        self.add_sound("assets/retro_shot.wav")
         self.play(
-            Create(rectPerforatedCard),
-        )
-        self.wait(1)
-        c1 = get_circles(0, 0)
-        self.play(Create(c1), runtime=0.01)
-
-        # change sex to M
-
-        c2 = get_circles(1, 0)
-
-        self.play(rectCenseCard.animate.move_to(text[67:68]))
-        self.play(FadeOut(c1), Create(c2), runtime=0.01)
-
-        # age
-
-        self.play(
-            rectCenseCard.animate.move_to(text[52:54]),
-        )
-        self.play(
-            rectPerforatedCard.animate.stretch_to_fit_width(
-                rectPerforatedCard.width * 1.3
-            ).shift([rectPerforatedCard.width * 1.8, 0, 0]),
-        )
-        c2 = get_circles(3, 2)
-        c3 = get_circles(2, 3)
-
-        self.play(Create(c2), runtime=0.01)
-        self.wait(1)
-        self.play(Create(c3), runtime=0.01)
-
-        # civil state
-
-        self.play(
-            rectCenseCard.animate.move_to(text[54:55]),
+            contacMachine2D.closeTopPart(),
         )
 
-        c4 = get_circles(2, 6)
+        self.play(clockDial.add_count())
 
         self.play(
-            rectPerforatedCard.animate.stretch_to_fit_width(
-                rectPerforatedCard.width / 1.3
-            ).set_x(c4.get_x())
+            contacMachine2D.openTopPart(),
         )
 
-        self.play(Create(c4), runtime=0.01)
-
-        # ocup state
-        self.play(
-            rectCenseCard.animate.move_to(text[55:56]),
-        )
-
-        c5 = get_circles(1, 7)
-
-        self.play(rectPerforatedCard.animate.set_x(c5.get_x()))
-
-        self.play(Create(c5), runtime=0.01)
-
-        # Nac state
-        self.play(
-            rectCenseCard.animate.move_to(text[56:57]),
-        )
-        c6 = get_circles(1, 8)
-
-        self.play(rectPerforatedCard.animate.set_x(c6.get_x()))
-
-        self.play(Create(c6), runtime=0.01)
-
-        # INSTR state
-        self.play(
-            rectCenseCard.animate.move_to(text[57:58]),
-        )
-
-        c7 = get_circles(1, 9)
+        self.add_sound("assets/retro_shot.wav")
 
         self.play(
-            rectPerforatedCard.animate.set_x(c7.get_x()),
+            contacMachine2D.closeTopPart(),
         )
 
-        self.play(Create(c7), runtime=0.01)
+        self.play(clockDial.add_count())
 
-        # RELG state
+        self.play(ApplyMethod(display.replace, self.zoomed_camera.frame, stretch=True))
 
-        self.play(
-            rectCenseCard.animate.move_to(text[58:59]),
-        )
-        c8 = get_circles(1, 10)
-        self.play(
-            rectPerforatedCard.animate.set_x(c8.get_x()),
-        )
-        self.play(Create(c8), runtime=0.01)
+        self.play(FadeOut(display), FadeOut(zoomedFrame))
 
         self.wait(1)
 
-        # add random circles
 
-        randomCircles = VGroup(
-            *[get_circles(random.randint(0, 9), i) for i in range(11, 45)]
-        )
+class Scene2Part3(MovingCameraScene):
+    def construct(self):
 
-        # Crea animaciones para los círculos (FadeIn)
-        circle_anims = [FadeIn(c) for c in randomCircles]
+        faceClock = TabularMachine()
+        faceClock.rotate(
+            PI / 2, axis=Y_AXIS, about_point=faceClock.get_center()
+        ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=faceClock.get_center())
 
-        # Crea una animación personalizada para mover el rectángulo a lo largo de los X
-
-        # Agrupa todo: el rectángulo se mueve mientras los círculos aparecen con desfase
+        self.camera.frame.scale(1 / 2.5).move_to(faceClock.faceClockDial)
+        self.add(faceClock)
         self.play(
-            AnimationGroup(
-                rectPerforatedCard.animate.set_x(randomCircles[-1].get_x()),
-                *circle_anims,
-                lag_ratio=1
-                / len(
-                    circle_anims
-                ),  # Ajusta para que los círculos aparezcan repartidos durante el movimiento
-            ),
-            run_time=3,  # Ajusta el tiempo total
+            Succession(*[faceClock.faceClockDial.random_add_count() for _ in range(20)])
         )
-
         self.wait(1)
 
-        self.play(Uncreate(rectPerforatedCard))
 
-        self.play(
-            FadeOut(self.zoomed_display.display_frame),
-            FadeOut(rectCenseCard),
-        )
+class Scene2Part4(Scene):
+    default_font = "JetBrains Mono"
+    text_config = {
+        "font": default_font,
+        "weight": BOLD,
+        "font_size": 80,
+    }
 
+    def construct(self):
+        text1 = Text("Radix Sort", **self.text_config, color=TEAL)
+        self.play(Write(text1))
         self.wait(1)
