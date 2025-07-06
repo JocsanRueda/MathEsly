@@ -6,7 +6,7 @@ from object.tabularMachine import TabularMachine
 
 class Scene2(ThreeDScene):
     def construct(self):
-        self.part3()
+        self.part1()
 
     def part1(self):
         axes = ThreeDAxes()
@@ -38,12 +38,18 @@ class Scene2(ThreeDScene):
         self.wait(2)
 
     def part3(self):
-        axes = ThreeDAxes()
+        axes = ThreeDAxes(
+            x_length=12,
+            y_length=12,
+        )
         axes_labels = axes.get_axis_labels(Tex("x"), Tex("y"), Tex("z"))
+
         self.add(axes, axes_labels)
+
         self.set_camera_orientation(
             phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
         )
+
         machine = TabularMachine(
             main_structure_opacity=1.0,
             drawers_opacity=1.0,
@@ -59,27 +65,51 @@ class Scene2(ThreeDScene):
             .move_to(machine.lever_assembly.get_center())
             .shift([-0.25, -0.45, -0.2])
         )
+
         perforatedCard.rotate(
             angle=PI / 2, axis=Z_AXIS, about_point=perforatedCard.get_center()
         )
 
+        self.wait(1)
+
         self.play(
             DrawBorderThenFill(machine),
+            axes.animate.set_opacity(0.05),
+            axes_labels.animate.set_opacity(0.05),
+        )
+
+        self.wait(1)
+
+        self.move_camera(
+            theta=self.camera.get_theta() + 40 * DEGREES,
+            run_time=2,
+            rate_func=rate_functions.smooth,
         )
 
         self.move_camera(
-            theta=40 * DEGREES + 2 * PI,
-            run_time=4,
-            rate_func=linear,
+            theta=self.camera.get_theta() - 100 * DEGREES,
+            run_time=2,
+            rate_func=rate_functions.smooth,
         )
 
-        # self.add(perforatedCard)
-        self.add(machine)
+        self.move_camera(
+            theta=self.camera.get_theta() + 60 * DEGREES,
+            run_time=2,
+            rate_func=rate_functions.smooth,
+        )
+
+        self.wait(1)
+
         self.add(perforatedCard.shift([12, 0, 0]))
         original_position = perforatedCard.get_center()
         position = machine.lever_assembly.get_center() + [-0.25, -0.45, -0.2]
+        phi = self.camera.get_phi()
+        theta = self.camera.get_theta()
+        zoom = self.camera.get_zoom()
 
-        machine.open_reader(animate=False)
+        self.wait(1)
+
+        self.play(machine.open_reader(animate=True))
         # scene reader card
         for _ in range(3):
 
@@ -118,11 +148,11 @@ class Scene2(ThreeDScene):
         # Mueve la cámara para que quede de frente a faceClockDial
 
         face_center = machine.faceClockDial.get_center()
-        machine.get_ang
+
         self.move_camera(
             frame_center=face_center,
             phi=90 * DEGREES,
-            theta=0 * DEGREES,
+            theta=self.camera.get_theta() - 40 * DEGREES,
             zoom=2.5,
             run_time=2,
         )
@@ -131,191 +161,203 @@ class Scene2(ThreeDScene):
 
         self.wait()
 
-        # # part 4
-        # perforatedCard.shift([0, 5, 1])
-        # space_z = 0.02
+        # part 4
+        perforatedCard.shift([machine.get_x() - 3, machine.get_y() + 3, 1])
+        space_z = 0.02
 
-        # simplesCard = VGroup(
-        #     [
-        #         PerforatedCard(simpleCard=True)
-        #         .set_stroke(width=0.1, color=BLACK, opacity=0.6)
-        #         .scale(0.1)
-        #         .move_to(perforatedCard.get_center() + [0, 0, -space_z])
-        #         for _ in range(150)
-        #     ]
-        # )
+        simplesCard = VGroup(
+            [
+                PerforatedCard(simpleCard=True)
+                .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+                .scale(0.1)
+                .move_to(perforatedCard.get_center() + [0, 0, -space_z])
+                for _ in range(150)
+            ]
+        )
 
-        # for i in range(len(simplesCard)):
-        #     simplesCard[i].rotate(
-        #         angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
-        #     ).shift([0, 0, -space_z * i])
+        for i in range(len(simplesCard)):
+            simplesCard[i].rotate(
+                angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
+            ).shift([0, 0, -space_z * i])
 
-        # simplesCard = VGroup(*reversed(simplesCard.submobjects))
-        # simplesCard.add(perforatedCard)
-        # # self.play(
-        # #     AnimationGroup(*[FadeIn(s) for s in simplesCard], lag_ratio=0.05),
-        # #     run_time=1,
-        # # )
+        simplesCard = VGroup(*reversed(simplesCard.submobjects))
 
-        # simplesCard.set_z_index(10)
-        # self.add(simplesCard)
-
-        # simpleCard1 = (
-        #     simplesCard.copy()
-        #     .shift([-perforatedCard.width * 1.5, -1, 0])
-        #     .set_z_index(9)
-        # )
-        # simpleCard2 = (
-        #     simplesCard.copy().shift([-perforatedCard.width * 1.5, 1, 0]).set_z_index(9)
-        # )
-
-        # self.add(simpleCard1, simpleCard2)
-        # # self.move_camera(frame_center=simplesCard.get_center(), zoom=2)
-        # # self.play(
-        # #     FadeIn(simpleCard1),
-        # #     FadeIn(simpleCard2),
-        # # )
-        # # self.wait(1)
-        # self.remove(machine)
-
-        # # simplesCard.move_to(ORIGIN)
-        # # simpleCard1.move_to([-perforatedCard.width * 1.5, -1, 0])
-        # # simpleCard2.move_to([-perforatedCard.width * 1.5, 1, 0])
-
-        # # group1
-        # groupCard1 = VGroup(
-        #     PerforatedCard(simpleCard=True)
-        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
-        #     .scale(0.1)
-        # )
-        # groupCard1.rotate(
-        #     angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
-        # )
-        # # group2
-        # groupCard2 = VGroup(
-        #     PerforatedCard(simpleCard=True)
-        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
-        #     .scale(0.1)
-        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
-        # # group3
-        # groupCard3 = VGroup(
-        #     PerforatedCard(simpleCard=True)
-        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
-        #     .scale(0.1)
-        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
-        # # group4
-        # groupCard4 = VGroup(
-        #     PerforatedCard(simpleCard=True)
-        #     .set_stroke(width=0.1, color=BLACK, opacity=0.6)
-        #     .scale(0.1)
-        # ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
-
-        # allGrupCards = VGroup(groupCard1, groupCard2, groupCard3, groupCard4).arrange(
-        #     DOWN, buff=0.5
-        # )
-
-        # self.add(allGrupCards)
-
-        # def random_move(animate=True):
-        #     animation = []
-        #     # El ciclo termina cuando todos los grupos tienen solo 1 elemento
-        #     while len(simplesCard) > 1 or len(simpleCard1) > 1 or len(simpleCard2) > 1:
-        #         randomArray = []
-        #         if len(simplesCard) > 1:
-        #             randomArray.append(simplesCard)
-        #         if len(simpleCard1) > 1:
-        #             randomArray.append(simpleCard1)
-        #         if len(simpleCard2) > 1:
-        #             randomArray.append(simpleCard2)
-
-        #         # Selecciona un grupo fuente con más de 1 elemento
-        #         array = random.choice(randomArray)
-        #         # Selecciona un elemento que NO sea el último
-        #         randomItem = random.choice(array.submobjects[:-1])
-
-        #         index = random.randint(0, len(allGrupCards) - 1)
-        #         originArray = allGrupCards[index]
-
-        #         if animate:
-        #             animation.append(
-        #                 randomItem.animate.move_to(
-        #                     originArray[0].get_center()
-        #                     + [0, 0, space_z * len(originArray)]
-        #                 ).set_z_index(index)
-        #             )
-
-        #             originArray.add(randomItem)
-        #             array.remove(randomItem)
-        #         else:
-        #             randomItem.move_to(
-        #                 originArray[0].get_center() + [0, 0, space_z * len(originArray)]
-        #             ).set_z_index(index)
-
-        #             originArray.add(randomItem)
-        #             array.remove(randomItem)
-
-        #     lastItem = [
-        #         *simplesCard,
-        #         *simpleCard1,
-        #         *simpleCard2,
-        #         simpleCard1[0].copy(),
-        #     ]
-        #     for i in range(len(lastItem)):
-
-        #         randomItem = lastItem[i]
-
-        #         originArray = allGrupCards[i]
-        #         if animate:
-        #             animation.append(
-        #                 randomItem.animate.move_to(
-        #                     originArray[0].get_center()
-        #                     + [0, 0, space_z * len(originArray)]
-        #                 ).set_z_index(i)
-        #             )
-        #         else:
-        #             randomItem.move_to(
-        #                 originArray[0].get_center() + [0, 0, space_z * len(originArray)]
-        #             ).set_z_index(i)
-
-        #         originArray.add(randomItem)
-
-        #     return AnimationGroup(*animation, lag_ratio=0.009)
-
-        # # #animte
-        # # self.play(
-        # #     random_move(),
-        # # )
-
-        # random_move(animate=False)
-        # # Posiciona la cámara de frente a los cards agrupados
-        # # standar phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
-        # self.move_camera(
-        #     frame_center=ORIGIN + [0, 0, 1],
-        #     theta=self.camera.get_theta() - 25 * DEGREES,
-        #     zoom=1.4,
-        # )
-
-        # text1 = (
-        #     Text(
-        #         "Radix Sort",
-        #         font="JetBrains Mono",
-        #         weight=BOLD,
-        #         color=TEAL,
-        #         font_size=70,
-        #     )
-        #     .to_edge(UP, buff=0.5)
-        #     .set_z_index(0)
-        # )
-
-        # self.add_fixed_in_frame_mobjects(
-        #     text1,
-        # )
+        simplesCard.add(perforatedCard)
 
         # self.play(
-        #     Write(text1, run_time=2, rate_func=smooth),
+        #     AnimationGroup(*[FadeIn(s) for s in simplesCard], lag_ratio=0.05),
+        #     run_time=1,
         # )
 
-        # self.wait(1)
+        simplesCard.set_z_index(10)
+
+        self.add(simplesCard)
+
+        simpleCard1 = simplesCard.copy().shift([-0.7, -1, 0]).set_z_index(9)
+        simpleCard2 = simplesCard.copy().shift([-0.7, 1, 0]).set_z_index(9)
+
+        self.move_camera(
+            frame_center=simplesCard.get_center(), zoom=1.5, phi=phi, theta=theta
+        )
+
+        self.move_camera(phi=phi, theta=theta, zoom=zoom)
+
+        self.play(
+            FadeIn(simpleCard1),
+            FadeIn(simpleCard2),
+        )
+        self.wait(1)
+
+        self.play(
+            FadeOut(machine),
+            axes.animate.set_opacity(1),
+            axes_labels.animate.set_opacity(1),
+        )
+
+        self.wait(1)
+
+        # group1
+        groupCard1 = VGroup(
+            PerforatedCard(simpleCard=True)
+            .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+            .scale(0.1)
+        )
+        groupCard1.rotate(
+            angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center()
+        )
+        # group2
+        groupCard2 = VGroup(
+            PerforatedCard(simpleCard=True)
+            .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+            .scale(0.1)
+        ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+        # group3
+        groupCard3 = VGroup(
+            PerforatedCard(simpleCard=True)
+            .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+            .scale(0.1)
+        ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+        # group4
+        groupCard4 = VGroup(
+            PerforatedCard(simpleCard=True)
+            .set_stroke(width=0.1, color=BLACK, opacity=0.6)
+            .scale(0.1)
+        ).rotate(angle=PI / 2, axis=Z_AXIS, about_point=simplesCard[i].get_center())
+
+        allGrupCards = VGroup(groupCard1, groupCard2, groupCard3, groupCard4).arrange(
+            DOWN, buff=0.5
+        )
+
+        def random_move(animate=True):
+            animation = []
+            # El ciclo termina cuando todos los grupos tienen solo 1 elemento
+            while len(simplesCard) > 1 or len(simpleCard1) > 1 or len(simpleCard2) > 1:
+                randomArray = []
+                if len(simplesCard) > 1:
+                    randomArray.append(simplesCard)
+                if len(simpleCard1) > 1:
+                    randomArray.append(simpleCard1)
+                if len(simpleCard2) > 1:
+                    randomArray.append(simpleCard2)
+
+                # Selecciona un grupo fuente con más de 1 elemento
+                array = random.choice(randomArray)
+                # Selecciona un elemento que NO sea el último
+                randomItem = random.choice(array.submobjects[:-1])
+
+                index = random.randint(0, len(allGrupCards) - 1)
+                originArray = allGrupCards[index]
+
+                if animate:
+                    animation.append(
+                        randomItem.animate.move_to(
+                            originArray[0].get_center()
+                            + [0, 0, space_z * len(originArray)]
+                        ).set_z_index(index)
+                    )
+
+                    originArray.add(randomItem)
+                    array.remove(randomItem)
+                else:
+                    randomItem.move_to(
+                        originArray[0].get_center() + [0, 0, space_z * len(originArray)]
+                    ).set_z_index(index)
+
+                    originArray.add(randomItem)
+                    array.remove(randomItem)
+
+            lastItem = [
+                *simplesCard,
+                *simpleCard1,
+                *simpleCard2,
+                simpleCard1[0].copy(),
+            ]
+            for i in range(len(lastItem)):
+
+                randomItem = lastItem[i]
+
+                originArray = allGrupCards[i]
+                if animate:
+                    animation.append(
+                        randomItem.animate.move_to(
+                            originArray[0].get_center()
+                            + [0, 0, space_z * len(originArray)]
+                        ).set_z_index(i)
+                    )
+                else:
+                    randomItem.move_to(
+                        originArray[0].get_center() + [0, 0, space_z * len(originArray)]
+                    ).set_z_index(i)
+
+                originArray.add(randomItem)
+
+            return AnimationGroup(*animation, lag_ratio=0.009)
+
+        self.wait(1)
+
+        # animte
+        self.play(
+            random_move(),
+        )
+
+        self.wait(1)
+
+        random_move(animate=False)
+        # Posiciona la cámara de frente a los cards agrupados
+        # standar phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=0.7
+        self.move_camera(
+            frame_center=ORIGIN + [0, 0, 1],
+            theta=self.camera.get_theta() - 25 * DEGREES,
+            zoom=1.4,
+        )
+
+        self.wait(1)
+
+        text1 = (
+            Text(
+                "Radix Sort",
+                font="JetBrains Mono",
+                weight=BOLD,
+                color=TEAL,
+                font_size=70,
+            )
+            .to_edge(UP, buff=0.5)
+            .set_z_index(0)
+        )
+
+        self.add_fixed_in_frame_mobjects(
+            text1,
+        )
+
+        self.play(
+            Write(text1, run_time=2, rate_func=smooth),
+        )
+
+        self.wait(1)
+
+        self.play(FadeOut(text1))
+
+        self.wait(1)
 
 
 class Scene2Part2(ZoomedScene):

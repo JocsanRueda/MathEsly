@@ -37,6 +37,7 @@ class Timeline(VGroup):
 
         self.ticks = VGroup()
         self.labels = VGroup()
+        self.current_label = None
         self._build_ticks()
 
         self.dot = (
@@ -200,6 +201,33 @@ class Timeline(VGroup):
             lag_ratio=0.2,
         )
 
+    def Fade_Out(self, *args, **kwargs):
+        range_start_years = abs(self.current_start_year - self.real_start_year)
+        range_end_years = abs(self.current_end_year - self.real_start_year)
+
+        return Succession(
+            AnimationGroup(
+                AnimationGroup(
+                    FadeOut(self.left_extension, **kwargs),
+                    FadeOut(self.right_extension, **kwargs),
+                ),
+                AnimationGroup(
+                    FadeOut(self.main_line, **kwargs),
+                    FadeOut(self.ticks, **kwargs),
+                    FadeOut(self.labels[range_start_years:range_end_years], **kwargs),
+                    FadeOut(self.dot, **kwargs),
+                    FadeOut(self.marker, **kwargs),
+                    FadeOut(self.current_label, **kwargs),
+                ),
+                lag_ratio=0.2,
+            ),
+            AnimationGroup(
+                FadeOut(self.left_rectangle, **kwargs),
+                FadeOut(self.right_rectangle, **kwargs),
+                run_time=0.05,
+            ),
+        )
+
     def animate_select_year(self, year, label_text=None, font_size=36):
         animation = []
 
@@ -216,6 +244,9 @@ class Timeline(VGroup):
             font=self.default_font,
             weight=BOLD,
         ).next_to(self, DOWN, buff=0.5)
+
+        self.current_label = label
+
         animation.append(
             AnimationGroup(
                 self.timeLine.animate.shift(RIGHT * shift_x),

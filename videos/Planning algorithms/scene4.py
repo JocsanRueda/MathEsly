@@ -1,208 +1,313 @@
 from manim import *
 from object.arrayNumber import ArrayNumber
-import random
 
 
-class Scene4(Scene):
+class Scene4(ThreeDScene):
     default_font = "JetBrains Mono"
-    text_config = {
-        "font": default_font,
-        "weight": BOLD,
-        "font_size": 80,
-    }
 
     def construct(self):
-        self.intro()
 
-    def intro(self):
-        cap = Text("Capitulo 2", **self.text_config, color=TEAL).to_edge(UP)
-
-        full_text = "El orden nace con las computadoras"
-        name = Text("", font=self.default_font, weight=BOLD, color=WHITE, font_size=40)
-        name.next_to(cap, DOWN, buff=1)
-
-        # Cursor guion alto
-        cursor = Text(
-            "|", font=self.default_font, weight=BOLD, color=TEAL, font_size=40
-        )
-        cursor.next_to(name, RIGHT, buff=0.05)
-
-        self.add(cap, name, cursor)
-
-        # Animación de escritura
-        for i, char in enumerate(full_text):
-            # Velocidad variable (más rápido)
-            delay = random.uniform(0.015, 0.12)
-            self.wait(delay)
-            name.text += char
-            name.become(
-                Text(
-                    name.text,
-                    font=self.default_font,
-                    weight=BOLD,
-                    color=WHITE,
-                    font_size=40,
-                ).move_to(name)
-            )
-            cursor.next_to(name, RIGHT, buff=0.05)
-            self.wait(0.01)  # Breve pausa para el cursor
-
-        # Parpadeo final del cursor
-        for _ in range(6):
-            cursor.set_opacity(0)
-            self.wait(0.25)
-            cursor.set_opacity(1)
-            self.wait(0.25)
-        cursor.set_opacity(0)
+        self.part1()
 
     def part1(self):
+        axes = ThreeDAxes()
+        # Agregar nombres a los ejes
+        x_label = Text("X").next_to(axes.x_axis.get_end(), RIGHT)
+        y_label = Text("Y").next_to(axes.y_axis.get_end(), UP)
+        z_label = Text("Z").next_to(axes.z_axis.get_end(), OUT)
+        self.add(x_label, y_label, z_label, axes)
 
-        # radix sort
-        array = [100, 50, 3, 7000, 10]
+        self.set_camera_orientation(
+            phi=65 * DEGREES, theta=40 * DEGREES, distance=16, zoom=1
+        )
 
-        array_order = list(range(10))
-        #                 1 - 2 - 3 - 4 - 5
-        list_array = ArrayNumber(array, color=BLUE).to_edge(UP).scale(0.6)
-        list_order = (
-            ArrayNumber(
-                array_order,
-                color=WHITE,
-                vertical=True,
-                show_lines=False,
-                width=1,
-                height=1,
-                length_space=0.3,
-                font_size=34,
-            )
-            .to_edge(LEFT)
+        image1 = ImageMobject("assets/von_neumann.jpg")
+
+        image1.scale(0.5)
+
+        rect = Rectangle(width=image1.width, height=image1.height).set_stroke(
+            color=BLUE, width=5
+        )
+
+        rect.move_to(image1.get_center())
+
+        name = Text(
+            "John von Neumann",
+            font=self.default_font,
+            font_size=32,
+            color=WHITE,
+            weight=BOLD,
+        )
+
+        name.next_to(image1, RIGHT, buff=2, aligned_edge=UP)
+
+        years = Text(
+            "1903 - 1957",
+            font=self.default_font,
+            font_size=16,
+            color=WHITE,
+        ).next_to(name, DOWN, buff=0.3)
+
+        ocupation = Text(
+            "Matemático, físico y científico de la computación ",
+            font=self.default_font,
+            font_size=18,
+            color=WHITE,
+        ).next_to(years, DOWN, buff=0.4)
+
+        group = Group(rect, image1, name, ocupation, years)
+
+        self.move_camera(
+            frame_center=ORIGIN + [0, 3, 1],
+            theta=self.camera.get_theta() - 25 * DEGREES,
+            zoom=1.4,
+        )
+
+        self.add_fixed_in_frame_mobjects(group)
+        image1.shift([0, 3, 0])
+        group.move_to(ORIGIN + [0, 1.5, 0])
+
+        text2 = Text(
+            "Merge sort", font=self.default_font, font_size=48, color=BLUE, weight=BOLD
+        ).next_to(ocupation, DOWN, buff=0.5)
+
+        self.play(
+            FadeIn(group[:2]),
+            Write(name),
+            Write(ocupation),
+            Write(years),
+        )
+        self.wait(1)
+
+        self.add_fixed_in_frame_mobjects(text2)
+
+        self.play(Write(text2))
+
+        self.wait(1)
+
+        image2 = (
+            ImageMobject("assets/von_neumann.webp")
             .scale(0.5)
-            .shift([0, -0.5, 0])
-        )
-        self.play(
-            DrawBorderThenFill(list_array),
+            .move_to(image1.get_left(), aligned_edge=LEFT)
         )
 
-        # select element with max digits
-
-        max_element = list_array.squares[3]
-        max_element.save_state()
-
-        self.wait(1)
-
-        # text with numer digits
-        text1 = Text("4", font=self.default_font, font_size=38).next_to(
-            max_element, DOWN, buff=0.4
-        )
-        self.play(
-            max_element.animate.set_color(YELLOW),
-            Write(text1),
-            run_time=0.5,
-        )
-        self.wait(1)
+        self.add_fixed_in_frame_mobjects(image2)
 
         self.play(
-            Restore(max_element),
-            FadeOut(text1),
+            FadeIn(image2),
+            rect.animate.stretch_to_fit_width(image2.width).move_to(
+                [image2.get_left()[0], 0, 0],
+                aligned_edge=LEFT,
+            ),
+            FadeOut(name),
+            FadeOut(ocupation),
+            FadeOut(years),
+            FadeOut(text2),
         )
 
-        self.wait(1)
+        text3 = (
+            Text("EDVAC", font=self.default_font, font_size=48, color=BLUE, weight=BOLD)
+            .next_to(rect, RIGHT, buff=3)
+            .shift([0, 1, 0])
+        )
 
-        animation_become = []
-        for i, square in enumerate(list_array.squares):
-            len_str = 4 - len(square.get_number_string())
+        subText3 = Text(
+            f"    Primeras computadoras \n electronicas programables",
+            font=self.default_font,
+            font_size=19,
+            color=WHITE,
+        ).next_to(text3, DOWN, buff=0.25)
 
-            newText = (
-                Text(
-                    "0" * len_str + square.get_number_string(),
-                    font=self.default_font,
-                    font_size=32,
-                )
-                .scale(0.5)
-                .move_to(square.get_center())
-            )
-
-            animation_become.append(square.number_text.animate.become(newText))
-
-        self.play(AnimationGroup(*animation_become, lag_ratio=0.2))
+        self.add_fixed_in_frame_mobjects(text3, subText3)
 
         self.play(
-            DrawBorderThenFill(list_order),
+            Write(text3),
+            Write(subText3),
         )
 
         self.wait(1)
 
-        squareSelect = (
-            Rectangle(width=0.15, height=0.3, color=RED, fill_opacity=0)
-            .set_stroke(width=5)
-            .set_z_index(10)
-        )
-
         self.play(
-            DrawBorderThenFill(squareSelect),
+            FadeOut(image1),
+            FadeOut(image2),
+            FadeOut(rect),
+            FadeOut(text3),
+            FadeOut(subText3),
         )
-        it = len(str(max(list_array.array)))
-        cont_elements = [[] for _ in range(10)]
-
-        for i in range(it + 1):
-
-            if i > 0:
-                new_order = [
-                    int(l.get_number_string()) for e in cont_elements for l in e
-                ]
-
-                self.play(
-                    list_array.new_order(new_order, positions=position, lag_ratio=0.35),
-                )
-
-                cont_elements = [[] for _ in range(10)]
-                if i == it:
-                    break
-
-            position = [i.get_center() for i in list_array.squares]
-            for j, jdx in enumerate(list_array.squares):
-
-                self.play(
-                    squareSelect.animate.move_to(
-                        jdx.get_number_text()[-1 * (i + 1)].get_center()
-                    ),
-                )
-                self.wait(0.5)
-                position_index = (
-                    int(jdx.get_number_string()[(-1 * (i + 1))])
-                    if i + 1 == len(str(jdx.get_number_string()))
-                    else 0
-                )
-                cont_elements[position_index].append(jdx)
-
-                self.play(
-                    jdx.animate.next_to(
-                        list_order.squares[position_index],
-                        RIGHT,
-                        buff=((jdx.width + 0.1) * len(cont_elements[position_index])),
-                    ),
-                )
-
-        self.play(
-            FadeOut(squareSelect),
-            FadeOut(list_order),
-        )
-        animation_become = []
-        for i, square in enumerate(list_array.squares):
-            len_str = 4 - len(square.get_number_string())
-
-            newText = (
-                Text(
-                    square.get_number_string(),
-                    font=self.default_font,
-                    font_size=32,
-                )
-                .scale(0.5)
-                .move_to(square.get_center())
-            )
-
-            animation_become.append(square.number_text.animate.become(newText))
-
-        self.play(AnimationGroup(*animation_become, lag_ratio=0.2))
-        self.play(list_array.animate.move_to(ORIGIN))
 
         self.wait(1)
+
+
+class Scene4Part2(Scene):
+    default_font = "JetBrains Mono"
+
+    def construct(self):
+        array = [50, 10, 7000, 3, 100]
+        list_array = ArrayNumber(array, color=BLUE).scale(0.5).to_edge(UP)
+        order_array = (
+            ArrayNumber([0, 1, 2, 3, 4], color=WHITE, show_lines=False)
+            .scale(0.5)
+            .next_to(list_array, DOWN, buff=0.5)
+        )
+
+        mtext1 = MathTex(
+            r"\left\lfloor \frac{n}{2} \right\rfloor", font_size=26
+        ).next_to(list_array, RIGHT, buff=0.5)
+
+        mtext2 = MathTex(
+            r"= \left\lfloor \frac{5}{2} \right\rfloor", font_size=26
+        ).next_to(mtext1, RIGHT, buff=0.1)
+
+        mtext3 = MathTex(r"= 2", font_size=26).next_to(mtext2, RIGHT, buff=0.1)
+
+        self.play(DrawBorderThenFill(list_array))
+        self.wait(1)
+
+        self.play(
+            Write(mtext1),
+        )
+
+        self.play(Write(mtext2))
+
+        self.play(Write(mtext3))
+
+        self.wait(1)
+
+        self.play(
+            DrawBorderThenFill(order_array),
+        )
+
+        list_array.squares.save_state()
+
+        self.play(
+            list_array.squares[:2].animate.set_color(YELLOW),
+        )
+        self.wait(1)
+        self.play(
+            list_array.squares[2:].animate.set_color(RED),
+        )
+
+        self.wait(1)
+
+        self.play(
+            Restore(list_array.squares),
+        )
+
+        self.play(
+            FadeOut(mtext1),
+            FadeOut(mtext2),
+            FadeOut(mtext3),
+            FadeOut(order_array),
+        )
+
+        self.wait(1)
+
+        self.merge_sort_animation(list_array, self)
+
+        self.play(
+            list_array.animate.move_to(ORIGIN),
+        )
+
+        self.wait(2)
+
+        self.play(
+            FadeOut(list_array),
+        )
+
+        self.wait(1)
+
+    def merge_sort_animation(
+        self, array_group, scene, depth=0, x_offset=0, final_array=None
+    ):
+        array = array_group.array
+        n = len(array)
+
+        if n <= 1:
+            return array_group
+
+        mid = n // 2
+
+        left_array = array_group.separated(end=mid)
+        right_array = array_group.separated(start=mid)
+
+        self.play(
+            left_array.animate.move_to(
+                array_group.get_center() + LEFT * 2 + DOWN * 1.5
+            ),
+            right_array.animate.move_to(
+                array_group.get_center() + RIGHT * 2 + DOWN * 1.5
+            ),
+        )
+
+        scene.wait(0.5)
+
+        # Recursivamente dividir y ordenar
+        sorted_left = self.merge_sort_animation(left_array, scene, depth + 1)
+        sorted_right = self.merge_sort_animation(right_array, scene, depth + 1)
+
+        # Fusionar visualmente
+        merged_array = self.merge(sorted_left, sorted_right, scene)
+        self.add(merged_array)
+
+        scene.play(
+            array_group.new_order(merged_array.array),
+            merged_array.animate.move_to(array_group.get_center()),
+        )
+
+        scene.play(
+            FadeOut(merged_array),
+            FadeOut(left_array),
+            FadeOut(right_array),
+        )
+
+        return merged_array
+
+    def merge(self, left, right, scene):
+        l_idx, r_idx = 0, 0
+        merged = []
+        animations = []
+
+        left_numbers = left.array
+        right_numbers = right.array
+
+        merged_array = []
+
+        while l_idx < len(left_numbers) and r_idx < len(right_numbers):
+            l_val = left_numbers[l_idx]
+            r_val = right_numbers[r_idx]
+
+            if l_val <= r_val:
+                square = left.squares[l_idx].copy()
+                merged_array.append(l_val)
+                animations.append(square)
+                l_idx += 1
+            else:
+                square = right.squares[r_idx].copy()
+                merged_array.append(r_val)
+                animations.append(square)
+                r_idx += 1
+
+        for i in range(l_idx, len(left_numbers)):
+            square = left.squares[i].copy()
+            merged_array.append(left_numbers[i])
+            animations.append(square)
+
+        for i in range(r_idx, len(right_numbers)):
+            square = right.squares[i].copy()
+            merged_array.append(right_numbers[i])
+            animations.append(square)
+
+        result_array = ArrayNumber(merged_array, color=GREEN).scale(0.5)
+        result_array.move_to(DOWN * 3)
+
+        for i, square in enumerate(animations):
+            square.generate_target()
+            square.target.move_to(result_array.squares[i].get_center())
+
+        scene.play(*[MoveToTarget(s) for s in animations])
+
+        self.wait(1)
+        scene.play(FadeOut(*animations), FadeIn(result_array))
+
+        self.wait(1)
+        return result_array
